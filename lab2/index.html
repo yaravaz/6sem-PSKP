@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Задание №3</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            color: #333;
+            padding: 20px;
+            width: 600px
+        }
+
+        #error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: column;
+            margin: 10px 0;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            height: 35px;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            height: 40px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #dbdbdb;
+        }
+
+        .el {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+    </style>
+</head>
+<body>
+<div id="error"></div>
+
+<button onclick="select()">Получить все кафедры</button>
+
+<br/>
+<div style="padding: 20px">
+    <div class='row'>
+        <label for="pulpit">PULPIT</label>
+        <input type="text" id="pulpit" min="0" required/>
+    </div>
+    <div class='row'>
+        <label for="pulpit_name">PULPIT_NAME</label>
+        <input type="text" id="pulpit_name" required/>
+    </div>
+    <div class='row'>
+        <label for="faculty">FACULTY</label>
+        <input type="text" id="faculty" required/>
+    </div>
+    <div class='row'>
+        <button onclick="insert()">Добавить</button>
+    </div>
+    <div class='row'>
+        <label for="pulpit_update">PULPIT</label>
+        <input type="text" id="pulpit_update" min="0" required onchange="getPulpitById()"/>
+    </div>
+    <div class='row'>
+        <label for="pulpit_name_update">PULPIT_NAME</label>
+        <input type="text" id="pulpit_name_update" required/>
+    </div>
+    <div class='row'>
+        <label for="faculty_update">FACULTY</label>
+        <input type="text" id="faculty_update" required/>
+    </div>
+    <div class='row'>
+        <button onclick="update()">Обновить по ID</button>
+    </div>
+    <div class='row'>
+        <label for="pulpit_delete">PULPIT</label>
+        <input type="text" id="pulpit_delete" min="0" required/>
+    </div>
+    <div class='row'>
+        <button onclick="remove()">Удалить по ID</button>
+    </div>
+    <div id="select_result"></div>
+</div>
+
+<script>
+    const select = () => {
+        fetch("/api/pulpits", {method: "GET", headers: {'Accept': 'application/json'}, mode: "no-cors"})
+            .then(response => response.json())
+            .then(data => {
+                select_result.innerHTML = "";
+                data.forEach(el => select_result.innerHTML += '<div class="el"><span style="color: darkmagenta;">PULPIT: </span>'
+                    + el.pulpit + '</br><span style="color: darkmagenta;"> PULPIT_NAME: </span>'
+                    + el.pulpit_name + '</br><span style="color: darkmagenta;"> FACULTY: </span>'
+                    + el.faculty + '</br>--------------------------------------------' + '</div>');
+            })
+    }
+    const insert = () => {
+        error.innerHTML = "";
+        fetch("/api/pulpits", {
+            method: "POST",
+            headers: {'Accept': 'application/json', 'Content-Type': 'application/json',},
+            body: JSON.stringify({
+                PULPIT: pulpit.value,
+                PULPIT_NAME: pulpit_name.value,
+                FACULTY: faculty.value,
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                if (data.errorMsg) {
+                    error.innerHTML = data.errorMsg;
+                }
+                pulpit.value = "";
+                pulpit_name.value = "";
+                faculty.value = "";
+                select();
+            })
+    }
+
+    const update = () => {
+        error.innerHTML = "";
+        fetch("/api/pulpits", {
+            method: "PUT",
+            headers: {'Accept': 'application/json', 'Content-Type': 'application/json',},
+            body: JSON.stringify({
+                PULPIT: pulpit_update.value,
+                PULPIT_NAME: pulpit_name_update.value,
+                FACULTY: faculty_update.value,
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.errorMsg)
+                if (data.errorMsg) {
+                    error.innerHTML = data.errorMsg;
+                }
+                pulpit_update.value = "";
+                pulpit_name_update.value = "";
+                faculty_update.value = "";
+                select();
+            })
+    };
+
+    const remove = () => {
+        error.innerHTML = "";
+        fetch(`/api/pulpits/${pulpit_delete.value}`, {
+            method: "DELETE",
+            headers: {'Accept': 'application/json', 'Content-Type': 'application/json',}
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                if (data.errorMsg) {
+                    error.innerHTML = data.errorMsg;
+                }
+                pulpit_delete.value = "";
+                select();
+            })
+    };
+
+    const getPulpitById = async () => {
+        let pulpits = await fetch("/api/pulpits", {method: "GET", headers: {'Accept': 'application/json'}, mode: "no-cors"})
+            .then(response => response.json());
+        let current_pulpit = null;
+        for (let pulpit of pulpits) {
+            if (pulpit.pulpit.trim() === pulpit_update.value.trim()) {
+                current_pulpit = pulpit;
+                break;
+            }
+        }
+
+        if (current_pulpit !== null) {
+            pulpit_name_update.value = current_pulpit.pulpit_name.trim();
+            faculty_update.value = current_pulpit.faculty.trim();
+        } else {
+            error.innerHTML = "Нет кафедры с таким кодом";
+            pulpit_update.value = "";
+            pulpit_name_update.value = "";
+            faculty_update.value = "";
+        }
+    };
+
+</script>
+</body>
+</html>

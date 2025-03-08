@@ -1,0 +1,38 @@
+<div class="container mt-4 d-flex flex-column align-items-center justify-content-center">
+    <div class="container mt-4">
+    <table class="table table-striped">
+        {{#each contacts}}
+            {{> contactBlocked}}
+        {{/each}}
+    </table>
+    </div>
+
+    <h3 class="text-center">Добавить контакт</h3>
+    <form class="form w-25">
+        <div class="form-group">
+            <label for="name" class="form-label">ФИО</label>
+            <input class="form-control" type="text" required name="name" id="name" 
+                   pattern="[A-Za-zА-Яа-яЁё\s\.]+" title="Только буквы, пробелы и точки"
+                   oninput="this.value = this.value.replace(/[^A-Za-zА-Яа-яЁё\s\.]/g, '')">
+        </div>
+        <div class="form-group">
+            <label for="phone" class="form-label">Телефон</label>
+            <input class="form-control" type="tel" required name="phone" id="phone" 
+                   pattern="^\[0-9]{7}$" title="Формат: 1234567"
+                   oninput="this.value = this.value.replace(/[^0-9+]/g, '')" maxlength="7" minlength="7">
+        </div>
+    </form>
+
+    <div class="mt-4 d-flex flex-row justify-content-between w-25">
+        <button class="btn btn-secondary" onclick="addContact()">Добавить</button>
+        <button class="btn btn-secondary" onclick="{{dismiss}}">Отказаться</button>
+    </div>
+</div>
+
+<style>
+    .disabled-link {
+        pointer-events: none; 
+        color: gray; 
+        text-decoration: none;
+    }
+</style>
